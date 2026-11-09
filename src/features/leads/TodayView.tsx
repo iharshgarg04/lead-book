@@ -8,6 +8,7 @@ import type { Lead } from '@/types'
 import { Btn } from './bits'
 import { TODAY_LIMIT, type SectionId, type TodaySection } from './filters'
 import { LeadCard } from './LeadCard'
+import { NextCallStrip } from './NextCallStrip'
 
 const PULSE: { id: SectionId; label: string; tone?: 'danger' | 'hot' }[] = [
   { id: 'overdue', label: 'overdue', tone: 'danger' },
@@ -71,15 +72,15 @@ export function TodayView({ leads, sections, ready, readOnly, onOpen, onNotPicke
   }
 
   const count = (id: SectionId) => sections.find(s => s.id === id)?.items.length || 0
-  const first = sections.flatMap(s => s.items)[0]
+  const queue = [...new Set(sections.flatMap(s => s.items))]
+  const first = queue[0]
 
   return (
     <div>
+      {first && <NextCallStrip l={first} total={queue.length} onOpen={onOpen} />}
       <div className="flex flex-wrap items-center gap-x-[26px] gap-y-2.5 pt-5 pb-1">
         {PULSE.map(p => <PulseLink key={p.id} id={p.id} n={count(p.id)} label={p.label} tone={p.tone} />)}
         <span title="Calls and updates logged today"><PulseLink id="due" n={logged} label="logged today" /></span>
-        <span className="flex-1" />
-        {first && <Btn variant="primary" onClick={() => onOpen(first.path)}>Start calling<ChevronRight aria-hidden /></Btn>}
       </div>
       {sections.map(s => {
         if (!s.items.length && s.id !== 'due') return null

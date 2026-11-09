@@ -36,11 +36,34 @@ export function DrawerHead({ l, months }: { l: Lead; months: Month[] }) {
 }
 
 /* ---------- contact ---------- */
-export function ContactSection({ l }: { l: Lead }) {
+export function ContactSection({ l, phone = false }: { l: Lead; phone?: boolean }) {
   const phoneRef = useRef<HTMLSpanElement>(null)
   const emailRef = useRef<HTMLSpanElement>(null)
   const wa = digits(l.phone)
   const notify = (m: string) => toast(m)
+  if (phone && l.phone) return (
+    <DrawerSection label="Contact">
+      <div className="grid grid-cols-2 gap-2.5">
+        <a href={`tel:${l.phone}`} className="inline-flex h-[54px] items-center justify-center gap-2 rounded-xl bg-primary text-base font-bold text-primary-foreground no-underline">
+          <Phone className="size-5" aria-hidden />Call
+        </a>
+        <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer"
+          className="inline-flex h-[54px] items-center justify-center gap-2 rounded-xl bg-[var(--s-won-bg)] text-base font-bold text-[var(--s-won)] no-underline">
+          <WhatsAppIcon className="size-5" />WhatsApp
+        </a>
+      </div>
+      <div className="mt-2.5 flex items-center justify-center gap-2">
+        <span ref={phoneRef} className="font-mono text-[15px] font-semibold text-ink-2 tabular select-all">{fmtPhone(l.phone)}</span>
+        <Btn size="sm" aria-label={`Copy phone number ${fmtPhone(l.phone)}`} onClick={() => copyText(l.phone, phoneRef.current, notify)}><Copy aria-hidden />Copy</Btn>
+      </div>
+      {l.email && (
+        <div className="mt-2 flex items-center justify-center gap-2">
+          <span ref={emailRef} className="text-sm font-medium text-ink-2 select-all [overflow-wrap:anywhere]">{l.email}</span>
+          <Btn size="sm" aria-label={`Copy email ${l.email}`} onClick={() => copyText(l.email, emailRef.current, notify)}><Copy aria-hidden />Copy</Btn>
+        </div>
+      )}
+    </DrawerSection>
+  )
   return (
     <DrawerSection label="Contact">
       <div className="flex flex-col gap-2.5">
@@ -66,7 +89,10 @@ export function ContactSection({ l }: { l: Lead }) {
 }
 
 /* ---------- log this call ---------- */
-export function LogCallSection({ l, note, setNote, readOnly, onOutcome, onSaveNote }: {
+const OUTCOME_CLASS = "inline-flex items-center gap-[7px] rounded-[9px] border border-input bg-card px-[11px] py-2 text-[13px] leading-[1.1] font-semibold text-foreground before:size-[7px] before:flex-none before:rounded-full before:bg-[var(--c)] before:content-[''] hover:border-[var(--c)] hover:bg-[var(--cb)] disabled:cursor-not-allowed disabled:opacity-45 aria-pressed:border-[var(--c)] aria-pressed:bg-[var(--cb)] aria-pressed:text-[var(--c)]"
+
+export function LogCallSection({ l, note, setNote, readOnly, onOutcome, onSaveNote, phone = false }: {
+  phone?: boolean
   l: Lead
   note: string
   setNote: (v: string) => void
@@ -77,7 +103,7 @@ export function LogCallSection({ l, note, setNote, readOnly, onOutcome, onSaveNo
   const taRef = useRef<HTMLTextAreaElement>(null)
   return (
     <DrawerSection>
-      <SecTitle>Log this call</SecTitle>
+      <SecTitle>{phone ? 'How did the call go?' : 'Log this call'}</SecTitle>
       <label htmlFor="dw-note" className="sr-only">Note</label>
       <textarea id="dw-note" ref={taRef} rows={2} value={note} onChange={e => setNote(e.target.value)} disabled={readOnly}
         placeholder="What did they say? e.g. skincare brand, wants Hindi videos, budget ~₹15k" className="field resize-y" />
@@ -85,13 +111,22 @@ export function LogCallSection({ l, note, setNote, readOnly, onOutcome, onSaveNo
         <span>Type a note, then tap an outcome — or save it on its own.</span>
         <Btn size="sm" disabled={readOnly} onClick={() => onSaveNote(() => taRef.current?.focus())}>Save note</Btn>
       </div>
-      {OUTCOME_GROUPS.map(g => (
+      {phone ? (
+        <div role="group" aria-label="Call outcomes" className="mt-3 grid grid-cols-2 gap-2">
+          {OUTCOME_GROUPS.flatMap(g => g.keys).map(k => (
+            <button key={k} type="button" data-s={k} aria-pressed={l.status === k} disabled={readOnly} onClick={() => onOutcome(k)}
+              className={cn(OUTCOME_CLASS, 'h-12 justify-center rounded-[11px] text-[14.5px]')}>
+              {SMAP[k].btn}
+            </button>
+          ))}
+        </div>
+      ) : OUTCOME_GROUPS.map(g => (
         <div key={g.label} role="group" aria-label={`${g.label} outcomes`} className="mt-2.5 grid grid-cols-[62px_1fr] items-start gap-2 max-[480px]:grid-cols-1 max-[480px]:gap-1">
           <span className="pt-[9px] text-xs font-medium text-muted-foreground max-[480px]:pt-0" aria-hidden>{g.label}</span>
           <div className="flex flex-wrap gap-1.5">
             {g.keys.map(k => (
               <button key={k} type="button" data-s={k} aria-pressed={l.status === k} disabled={readOnly} onClick={() => onOutcome(k)}
-                className="inline-flex items-center gap-[7px] rounded-[9px] border border-input bg-card px-[11px] py-2 text-[13px] leading-[1.1] font-semibold text-foreground before:size-[7px] before:flex-none before:rounded-full before:bg-[var(--c)] before:content-[''] hover:border-[var(--c)] hover:bg-[var(--cb)] disabled:cursor-not-allowed disabled:opacity-45 aria-pressed:border-[var(--c)] aria-pressed:bg-[var(--cb)] aria-pressed:text-[var(--c)]">
+                className={OUTCOME_CLASS}>
                 {SMAP[k].btn}
                 {SMAP[k].tip && <small className="font-mono text-[11px] font-medium text-muted-foreground">{SMAP[k].tip}</small>}
               </button>
@@ -129,7 +164,8 @@ export function RatingSection({ l, readOnly, onRate }: { l: Lead; readOnly: bool
 }
 
 /* ---------- next follow-up ---------- */
-export function FollowUpSection({ l, readOnly, dateRef, onSet }: {
+export function FollowUpSection({ l, readOnly, dateRef, onSet, phone = false }: {
+  phone?: boolean
   l: Lead
   readOnly: boolean
   dateRef: RefObject<HTMLInputElement | null>
@@ -167,10 +203,10 @@ export function FollowUpSection({ l, readOnly, dateRef, onSet }: {
         <input id="dw-time" ref={timeRef} type="time" value={time} onChange={e => setTime(e.target.value)} disabled={readOnly} className="field flex-[0_1_120px]" />
         <Btn onClick={save} disabled={readOnly}>Set</Btn>
       </div>
-      <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label="Quick follow-up">
+      <div className={cn('mt-2.5 flex gap-1.5', phone ? '-mx-5 flex-nowrap overflow-x-auto px-5 pb-1' : 'flex-wrap')} role="group" aria-label="Quick follow-up">
         {QUICK_FOLLOW.map(c => (
           <button key={c.q} type="button" disabled={readOnly} onClick={() => onSet(quickFollowValue(c.q))}
-            className="rounded-full border border-dashed border-input bg-transparent px-[11px] py-1.5 text-[12.5px] font-medium text-ink-2 hover:border-solid hover:border-ink-2 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45">
+            className={cn('flex-none rounded-full border border-dashed border-input bg-transparent px-[11px] py-1.5 text-[12.5px] font-medium text-ink-2 hover:border-solid hover:border-ink-2 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45', phone && 'px-3.5 py-2 text-[13px]')}>
             {c.label}
           </button>
         ))}
