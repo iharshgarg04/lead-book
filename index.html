@@ -1393,9 +1393,16 @@ function signIn() {
   const auth = firebase.auth(), p = new firebase.auth.GoogleAuthProvider();
   p.setCustomParameters({prompt: 'select_account'});
   auth.signInWithPopup(p).catch(e => {
-    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(e.code)) return auth.signInWithRedirect(p);
-    if (e.code === 'auth/popup-closed-by-user') return;
-    gate('signin', e.code === 'auth/unauthorized-domain' ? 'This website isn’t on Firebase’s allowed domains yet (Authentication → Settings → Authorized domains).' : 'Sign-in didn’t finish: ' + (e.message || e.code));
+    console.error('[sign-in]', e.code, e.message);
+    const msg = {
+      'auth/popup-blocked': 'Your browser blocked the Google sign-in window. Allow pop-ups for this site (the icon at the right of the address bar), then press Sign in again.',
+      'auth/popup-closed-by-user': 'The sign-in window was closed before finishing. Press Sign in and pick your Google account.',
+      'auth/cancelled-popup-request': 'Another sign-in window is already open — finish or close it, then try again.',
+      'auth/unauthorized-domain': 'This website isn’t on Firebase’s allowed domains yet (Authentication → Settings → Authorized domains).',
+      'auth/network-request-failed': 'Couldn’t reach Google. Check your internet connection and try again.',
+      'auth/web-storage-unsupported': 'This browser is blocking the storage sign-in needs. Turn off strict tracking protection for this site or use Chrome.',
+    }[e.code];
+    gate('signin', msg || `Sign-in didn’t finish (${e.code || 'unknown error'}). ${e.message || ''}`);
   });
 }
 /* ---------- portal: shared API + router ---------- */
