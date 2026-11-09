@@ -5,3 +5,7 @@ backup/
 firestore.rules
 firebase-debug.log
 .firebase/
+node_modules/
+dist/
+.firebase/
+*.local

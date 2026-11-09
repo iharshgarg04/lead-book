@@ -1,0 +1,183 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ---------- Design tokens (light) ---------- */
+:root {
+  --radius: 0.75rem;
+  --background: #f3f4f8;
+  --foreground: #181a28;
+  --card: #ffffff;
+  --card-foreground: #181a28;
+  --popover: #ffffff;
+  --popover-foreground: #181a28;
+  --primary: #c2185b;
+  --primary-foreground: #ffffff;
+  --secondary: #eef0f6;
+  --secondary-foreground: #181a28;
+  --muted: #eef0f6;
+  --muted-foreground: #6d7289;
+  --accent: #eef0f6;
+  --accent-foreground: #181a28;
+  --destructive: #b42318;
+  --border: #e0e3ec;
+  --input: #c8ccda;
+  --ring: #3b4cca;
+  --ink-2: #454a5f;
+  --warn: #9a5800;
+  --good: #0f7136;
+
+  --side: #1b2224;
+  --side-ink: #aeb8b6;
+  --side-hi: #e9ff8c;
+  --lime: #c8f31d;
+
+  /* lead status colours */
+  --s-new: #3445c4; --s-new-bg: #e7eafd;
+  --s-no_answer: #596074; --s-no_answer-bg: #e8eaf0;
+  --s-callback: #9a5800; --s-callback-bg: #fcefd8;
+  --s-talking: #0a679a; --s-talking-bg: #dff0fa;
+  --s-portfolio: #6a2fbf; --s-portfolio-bg: #efe6fc;
+  --s-meeting_set: #00766a; --s-meeting_set-bg: #d9f3ee;
+  --s-meeting_done: #2a7a33; --s-meeting_done-bg: #e1f2e2;
+  --s-won: #0f7136; --s-won-bg: #cdedd9;
+  --s-lost: #9e3626; --s-lost-bg: #f7e3df;
+  --s-junk: #7f8296; --s-junk-bg: #edeef2;
+  /* lead rating colours */
+  --r-hot: #c2410c; --r-hot-bg: #ffe6d5;
+  --r-warm: #a15c07; --r-warm-bg: #fef0c7;
+  --r-cold: #1d5fb0; --r-cold-bg: #dfebfb;
+  --r-unqualified: #6b7080; --r-unqualified-bg: #ecedf1;
+}
+
+/* ---------- Dark ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #101118;
+    --foreground: #ecedf5;
+    --card: #181a24;
+    --card-foreground: #ecedf5;
+    --popover: #1c1f2a;
+    --popover-foreground: #ecedf5;
+    --primary: #ff5e95;
+    --primary-foreground: #1a0610;
+    --secondary: #20232f;
+    --secondary-foreground: #ecedf5;
+    --muted: #20232f;
+    --muted-foreground: #8b90a7;
+    --accent: #20232f;
+    --accent-foreground: #ecedf5;
+    --destructive: #ff7a6b;
+    --border: #2a2d3b;
+    --input: #3a3e50;
+    --ring: #8ea0ff;
+    --ink-2: #bcc0d2;
+    --warn: #f4b860;
+    --good: #5be08c;
+
+    --s-new: #a3aeff; --s-new-bg: #23284a;
+    --s-no_answer: #a9afc2; --s-no_answer-bg: #262938;
+    --s-callback: #f4b860; --s-callback-bg: #3a2c12;
+    --s-talking: #6cc4f0; --s-talking-bg: #13303f;
+    --s-portfolio: #c39bff; --s-portfolio-bg: #2e2147;
+    --s-meeting_set: #4fd1bf; --s-meeting_set-bg: #10332f;
+    --s-meeting_done: #7fd487; --s-meeting_done-bg: #16301a;
+    --s-won: #5be08c; --s-won-bg: #0f3720;
+    --s-lost: #f0907e; --s-lost-bg: #3d1d17;
+    --s-junk: #8e92a3; --s-junk-bg: #24262f;
+    --r-hot: #ff8a4c; --r-hot-bg: #3f1d0c;
+    --r-warm: #f5c451; --r-warm-bg: #3a2e0e;
+    --r-cold: #7db4ff; --r-cold-bg: #132a47;
+    --r-unqualified: #9a9eae; --r-unqualified-bg: #262832;
+  }
+}
+
+@theme inline {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-invoice: "InvNS", "Noto Sans", Arial, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ink-2: var(--ink-2);
+  --color-warn: var(--warn);
+  --color-good: var(--good);
+  --color-side: var(--side);
+  --color-side-ink: var(--side-ink);
+  --color-side-hi: var(--side-hi);
+  --color-lime: var(--lime);
+}
+
+/* Invoice font used by the on-screen preview (same files the PDF embeds) */
+@font-face { font-family: "InvNS"; src: url("/fonts/NotoSans-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "InvNS"; src: url("/fonts/NotoSans-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body { @apply bg-background text-foreground; }
+  body { font-family: var(--font-sans); font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { text-wrap: balance; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+  select { cursor: pointer; }
+}
+
+@layer components {
+  .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  /* Coloured pills driven by data attributes so every module shares one palette */
+  .status-pill { --c: var(--s-junk); --cb: var(--s-junk-bg); color: var(--c); background: var(--cb); }
+  [data-s="new"] { --c: var(--s-new); --cb: var(--s-new-bg); }
+  [data-s="no_answer"] { --c: var(--s-no_answer); --cb: var(--s-no_answer-bg); }
+  [data-s="callback"] { --c: var(--s-callback); --cb: var(--s-callback-bg); }
+  [data-s="talking"] { --c: var(--s-talking); --cb: var(--s-talking-bg); }
+  [data-s="portfolio"] { --c: var(--s-portfolio); --cb: var(--s-portfolio-bg); }
+  [data-s="meeting_set"] { --c: var(--s-meeting_set); --cb: var(--s-meeting_set-bg); }
+  [data-s="meeting_done"] { --c: var(--s-meeting_done); --cb: var(--s-meeting_done-bg); }
+  [data-s="won"] { --c: var(--s-won); --cb: var(--s-won-bg); }
+  [data-s="lost"] { --c: var(--s-lost); --cb: var(--s-lost-bg); }
+  [data-s="junk"] { --c: var(--s-junk); --cb: var(--s-junk-bg); }
+  [data-r="hot"] { --rc: var(--r-hot); --rb: var(--r-hot-bg); }
+  [data-r="warm"] { --rc: var(--r-warm); --rb: var(--r-warm-bg); }
+  [data-r="cold"] { --rc: var(--r-cold); --rb: var(--r-cold-bg); }
+  [data-r="unqualified"] { --rc: var(--r-unqualified); --rb: var(--r-unqualified-bg); }
+  /* invoice payment status reuses the lead palette */
+  [data-st="unpaid"] { --c: var(--s-callback); --cb: var(--s-callback-bg); }
+  [data-st="partial"] { --c: var(--s-portfolio); --cb: var(--s-portfolio-bg); }
+  [data-st="paid"] { --c: var(--s-won); --cb: var(--s-won-bg); }
+  [data-st="cancelled"] { --c: var(--s-junk); --cb: var(--s-junk-bg); }
+  /* Native form controls styled to match shadcn inputs */
+  .field {
+    @apply h-9 w-full min-w-0 rounded-md border border-input bg-card px-3 text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow];
+  }
+  .field:focus-visible { @apply border-ring ring-[3px] ring-ring/20; outline: none; }
+  textarea.field { @apply h-auto py-2 leading-snug; }
+  select.field { @apply pr-8; }
+  /* Invoice paper preview */
+  .inv-page { position: absolute; left: 0; top: 0; width: 612px; height: 792px; background: #fff; transform-origin: 0 0; font-family: var(--font-invoice); color: #333; }
+  .inv-page .o { position: absolute; white-space: pre; line-height: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
