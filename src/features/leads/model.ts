@@ -1,5 +1,5 @@
 /* Lead domain model shared by Leads, Overview and Invoices. */
-import { addDays, dkey, digits, fmtAbs, parseNext, todayKey } from '@/lib/format'
+import { addDays, dkey, digits, fmtAbs, fmtPhone, parseNext, todayKey } from '@/lib/format'
 import type { Lead, LeadDoc, LeadNote, LeadRating, LeadStatus, PackageKey, TimelineKey } from '@/types'
 
 export interface StatusDef { k: LeadStatus; label: string; btn?: string; tip?: string }
@@ -48,7 +48,7 @@ export const TL: Record<TimelineKey, { label: string; short: string; rank: numbe
 }
 
 export const displayName = (l: Partial<Lead> | null | undefined) =>
-  (l && (l.name || l.company || l.phone || l.email)) || 'Unnamed lead'
+  (l && (l.name || l.company || fmtPhone(l.phone) || l.email)) || 'Unnamed lead'
 
 /** Human text for one history entry. */
 export function entryText(e: LeadNote | undefined): string {

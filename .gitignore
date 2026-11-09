@@ -9,3 +9,7 @@ node_modules/
 dist/
 .firebase/
 *.local
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*.log

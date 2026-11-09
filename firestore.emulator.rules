@@ -1,0 +1,10 @@
+rules_version = '2';
+// Local emulator only: lets the fake test account in. Never deployed.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function allowed() {
+      return request.auth != null && request.auth.token.email in ["tester@example.com"];
+    }
+    match /{document=**} { allow read, write: if allowed(); }
+  }
+}

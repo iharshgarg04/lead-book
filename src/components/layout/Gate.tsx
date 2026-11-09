@@ -25,7 +25,7 @@ const GoogleMark = () => (
 
 /** Shows sign-in / no-access screens; renders children once the user can see data. */
 export function Gate({ children }: { children: ReactNode }) {
-  const { status, error, signIn, signOut, user } = useAuth()
+  const { status, error, signIn, signOut, user, devSignIn } = useAuth()
   const { denied } = useStore()
 
   if (status === 'loading') return <GateCard><h2 className="font-display text-2xl font-bold">Pages Desk</h2><p className="text-sm text-ink-2">Signing you in…</p></GateCard>
@@ -34,6 +34,7 @@ export function Gate({ children }: { children: ReactNode }) {
       <h2 className="font-display text-2xl font-bold">Pages Desk</h2>
       <p className="text-sm leading-relaxed text-ink-2">Sign in with the Google account you use for leads and invoices.</p>
       <Button size="lg" className="mt-3 w-full" onClick={signIn}><GoogleMark />Sign in with Google</Button>
+      {devSignIn && <Button variant="outline" className="w-full" onClick={devSignIn}>Sign in as local test user</Button>}
       {error && <p role="alert" className="text-[13px] text-destructive">{error}</p>}
     </GateCard>
   )

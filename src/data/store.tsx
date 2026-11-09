@@ -53,6 +53,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [slow, setSlow] = useState(false)
   const [readOnly, setReadOnly] = useState(false)
   const monthSubs = useRef(new Map<string, Unsubscribe>())
+  const readyRef = useRef(false)
 
   useEffect(() => {
     if (status !== 'signedIn' || !user) return
@@ -61,7 +62,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (e.code === 'permission-denied') setDenied(true)
       else setError(e.code || 'error')
     }
-    const slowTimer = setTimeout(() => setSlow(true), 10000)
+    const slowTimer = setTimeout(() => { if (!readyRef.current) setSlow(true) }, 10000)
 
     subs.push(onSnapshot(collection(db, 'months'), { includeMetadataChanges: true }, snap => {
       setDenied(false)
@@ -101,7 +102,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const leadIndex = useMemo(() => new Map(leads.map(l => [l.path, l])), [leads])
   const invoiceIndex = useMemo(() => new Map(invoices.map(i => [i.id, i])), [invoices])
   const ready = monthsReady && months.every(m => monthReady[m.key])
-  useEffect(() => { if (ready) setSlow(false) }, [ready])
+  useEffect(() => { readyRef.current = ready; if (ready) setSlow(false) }, [ready])
 
   const getLead = useCallback((p: string | null | undefined) => (p ? leadIndex.get(p) : undefined), [leadIndex])
   const getInvoice = useCallback((id: string | null | undefined) => (id ? invoiceIndex.get(id) : undefined), [invoiceIndex])

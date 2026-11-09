@@ -1,6 +1,8 @@
-import { onAuthStateChanged, signInWithPopup, signOut as fbSignOut, type User } from 'firebase/auth'
+import {
+  createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut as fbSignOut, updateProfile, type User,
+} from 'firebase/auth'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { auth, googleProvider } from '@/lib/firebase'
+import { auth, googleProvider, usingEmulators } from '@/lib/firebase'
 
 type AuthStatus = 'loading' | 'signedOut' | 'signedIn'
 interface AuthCtx {
@@ -9,6 +11,8 @@ interface AuthCtx {
   error: string | null
   signIn: () => Promise<void>
   signOut: () => Promise<void>
+  /** Local emulator only: sign in as the fake test account. */
+  devSignIn?: () => Promise<void>
 }
 const Ctx = createContext<AuthCtx | null>(null)
 
@@ -40,7 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
   const signOut = useCallback(async () => { await fbSignOut(auth); location.reload() }, [])
 
-  const value = useMemo(() => ({ user, status, error, signIn, signOut }), [user, status, error, signIn, signOut])
+  // Emulator-only test account (see firestore.emulator.rules). Never available in production builds.
+  const devSignIn = useMemo(() => !usingEmulators ? undefined : async () => {
+    const email = 'tester@example.com', password = 'local-test-only'
+    try { await signInWithEmailAndPassword(auth, email, password) } catch {
+      const cred = await createUserWithEmailAndPassword(auth, email, password)
+      await updateProfile(cred.user, { displayName: 'Test User' })
+    }
+  }, [])
+
+  const value = useMemo(() => ({ user, status, error, signIn, signOut, devSignIn }), [user, status, error, signIn, signOut, devSignIn])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 
