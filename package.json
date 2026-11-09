@@ -38,8 +38,7 @@
     "typescript": "~7.0.2",
     "vite": "^8.3.6"
   },
-  "optionalDependencies": {
-    "@rolldown/binding-darwin-arm64": "1.2.16",
-    "@rolldown/binding-linux-x64-gnu": "1.2.16"
+  "engines": {
+    "node": ">=22.12"
   }
 }
