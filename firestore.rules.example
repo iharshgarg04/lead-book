@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only these Google accounts can read or change leads. Keep emails lowercase.
+    function allowed() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in [
+          "HARSH_PERSONAL_EMAIL@gmail.com",
+          "KHUSHI_EMAIL@gmail.com"
+        ];
+    }
+    match /{document=**} {
+      allow read, write: if allowed();
+    }
+  }
+}

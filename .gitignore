@@ -1,0 +1,7 @@
+# Lead data never goes in the repo
+backup/
+*.csv
+.DS_Store
+firestore.rules
+firebase-debug.log
+.firebase/
