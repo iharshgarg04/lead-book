@@ -47,6 +47,8 @@
   --r-warm: #93520a; --r-warm-bg: #fef0c7;
   --r-cold: #1d5fb0; --r-cold-bg: #dfebfb;
   --r-unqualified: #5a5e6e; --r-unqualified-bg: #ecedf1;
+  /* dropdown chevron (muted-foreground) */
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6478' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
 /* ---------- Dark ---------- */
@@ -89,6 +91,7 @@
     --r-warm: #f5c451; --r-warm-bg: #3a2e0e;
     --r-cold: #7db4ff; --r-cold-bg: #132a47;
     --r-unqualified: #9a9eae; --r-unqualified-bg: #262832;
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b90a7' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   }
 }
 
@@ -141,7 +144,16 @@
   h1, h2, h3 { text-wrap: balance; }
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
-  select { cursor: pointer; }
+  /* Own chevron instead of the native arrow, which sits flush against the right edge */
+  select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: var(--chevron);
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    background-size: 15px 15px;
+  }
 }
 
 @layer components {
@@ -174,7 +186,7 @@
   }
   .field:focus-visible { @apply border-ring ring-[3px] ring-ring/20; outline: none; }
   textarea.field { @apply h-auto py-2 leading-snug; }
-  select.field { @apply pr-8; }
+  select.field { padding-right: 34px; }
   /* Invoice paper preview */
   .inv-page { position: absolute; left: 0; top: 0; width: 612px; height: 792px; background: #fff; transform-origin: 0 0; font-family: var(--font-invoice); color: #333; }
   .inv-page .o { position: absolute; white-space: pre; line-height: 1; }

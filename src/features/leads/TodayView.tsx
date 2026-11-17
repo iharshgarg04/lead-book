@@ -1,14 +1,18 @@
 /* Today: pulse strip + call sections (legacy `today` block). */
 import { ChevronRight } from 'lucide-react'
 import { useMemo, type MouseEvent } from 'react'
+import { Link } from 'react-router'
 import { EmptyState } from '@/components/common'
-import { dkey, todayKey } from '@/lib/format'
+import { useStore } from '@/data/store'
+import { proposalDue } from '@/features/proposals/model'
+import { monthKeyOf } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Lead } from '@/types'
 import { Btn } from './bits'
 import { TODAY_LIMIT, type SectionId, type TodaySection } from './filters'
 import { LeadCard } from './LeadCard'
 import { NextCallStrip } from './NextCallStrip'
+import { ProgressCard, useMonthActivity, useWho } from './progress'
 
 const PULSE: { id: SectionId; label: string; tone?: 'danger' | 'hot' }[] = [
   { id: 'overdue', label: 'overdue', tone: 'danger' },
@@ -45,12 +49,11 @@ export function TodayView({ leads, sections, ready, readOnly, onOpen, onNotPicke
   onImport: () => void
   onAdd: () => void
 }) {
-  const logged = useMemo(() => {
-    const tk = todayKey()
-    let n = 0
-    for (const l of leads) for (const e of l.notes) if (e.at && e.kind === 'status' && dkey(new Date(e.at)) === tk) n++
-    return n
-  }, [leads])
+  const { proposals } = useStore()
+  const [who] = useWho()
+  const month = monthKeyOf(new Date())
+  const act = useMonthActivity(leads, month, who)
+  const propsDue = useMemo(() => proposals.filter(p => { const d = proposalDue(p); return d === 'overdue' || d === 'today' }).length, [proposals])
 
   if (!ready && !leads.length) {
     return (
@@ -78,9 +81,15 @@ export function TodayView({ leads, sections, ready, readOnly, onOpen, onNotPicke
   return (
     <div>
       {first && <NextCallStrip l={first} total={queue.length} onOpen={onOpen} />}
+      <ProgressCard act={act} month={month} who={who} compact />
       <div className="flex flex-wrap items-center gap-x-[26px] gap-y-2.5 pt-5 pb-1">
         {PULSE.map(p => <PulseLink key={p.id} id={p.id} n={count(p.id)} label={p.label} tone={p.tone} />)}
-        <span title="Calls and updates logged today"><PulseLink id="due" n={logged} label="logged today" /></span>
+        {propsDue > 0 && (
+          <Link to="/proposals?due=1" className="group flex items-baseline gap-[7px] text-[13.5px] text-ink-2 no-underline">
+            <b className="font-mono text-2xl leading-none font-semibold tracking-[-0.02em] text-warn tabular">{propsDue}</b>
+            <span className="group-hover:underline">proposal follow-ups</span>
+          </Link>
+        )}
       </div>
       {sections.map(s => {
         if (!s.items.length && s.id !== 'due') return null

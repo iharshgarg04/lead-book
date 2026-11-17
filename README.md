@@ -3,7 +3,9 @@
 Internal portal for Pages Production:
 
 - **Overview** — calls due, hot leads, billing and outstanding at a glance.
-- **Leads** — daily call queue, one-tap call outcomes, hot/warm/cold ratings, follow-ups, filters, import/export.
+- **Leads** — daily call queue, one-tap call outcomes, hot/warm/cold ratings, follow-ups, date-range filters, import/export.
+  The Calendar tab shows follow-ups and leads worked day by day, plus progress towards the monthly lead goal (`settings/goals`).
+- **Proposals** — quotes sent to brands: amount, videos, date sent, client response, negotiation, expected closing and next follow-up.
 - **Invoices** — GST and non-GST invoices in the Pages Production format, single or bulk creation, PDF/ZIP download, payments, history with filters.
 - **Settings** — seller details, bank terms, numbering, logo and full backups.
 

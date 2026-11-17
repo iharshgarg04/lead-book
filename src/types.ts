@@ -169,3 +169,53 @@ export interface Person {
   email: string
   lastSeen?: string
 }
+
+/** settings/goals — shared targets for the call desk */
+export interface Goals {
+  /** leads to work (call or note) per calendar month */
+  monthlyLeads: number
+}
+
+export type ProposalResponse = 'awaiting' | 'positive' | 'changes' | 'price' | 'declined' | 'no_reply'
+export type NegotiationStatus = 'not_started' | 'negotiating' | 'revised' | 'agreed' | 'won' | 'lost'
+
+export interface ProposalLogEntry {
+  /** human summary of what changed */
+  t: string
+  at: string
+  by: string | null
+}
+
+/** Proposal as stored at proposals/{id}. */
+export interface ProposalDoc {
+  /** months/{month}/leads/{id}, '' when not linked to a lead */
+  leadPath: string
+  /** client name / brand snapshot (kept if the lead is deleted) */
+  client: string
+  company: string
+  phone: string
+  amount: number
+  videos: number
+  /** 'YYYY-MM-DD' */
+  sentDate: string
+  response: ProposalResponse
+  /** what the client said */
+  responseNote: string
+  negotiation: NegotiationStatus
+  /** 'YYYY-MM-DD' or '' */
+  expectedClose: string
+  /** 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM', null when none */
+  nextAt: string | null
+  notes: string
+  log: ProposalLogEntry[]
+  /** ISO time it was marked won / lost */
+  closedAt: string | null
+  createdAt: string
+  createdBy: string | null
+  updatedAt: string
+  updatedBy: string | null
+}
+
+export interface Proposal extends ProposalDoc {
+  id: string
+}

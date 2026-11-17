@@ -1,9 +1,9 @@
 /* Full JSON backup in the legacy v2 format (restorable from Leads → Import). */
 import { downloadFile } from '@/lib/files'
 import { nowIso, todayKey } from '@/lib/format'
-import type { BusinessSettings, Counters, Invoice, Lead, Month } from '@/types'
+import type { BusinessSettings, Counters, Invoice, Lead, Month, Proposal } from '@/types'
 
-export function buildBackup(months: Month[], leads: Lead[], invoices: Invoice[], business: BusinessSettings, counters: Counters) {
+export function buildBackup(months: Month[], leads: Lead[], invoices: Invoice[], business: BusinessSettings, counters: Counters, proposals: Proposal[] = []) {
   return {
     format: 'leadbook-backup',
     version: 2,
@@ -14,6 +14,7 @@ export function buildBackup(months: Month[], leads: Lead[], invoices: Invoice[],
       return { month, id, data }
     }),
     invoices: invoices.map(i => { const { id, ...data } = i; return { id, data } }),
+    proposals: proposals.map(p => { const { id, ...data } = p; return { id, data } }),
     settings: { business, counters },
   }
 }
@@ -21,5 +22,5 @@ export function buildBackup(months: Month[], leads: Lead[], invoices: Invoice[],
 export function downloadBackup(...args: Parameters<typeof buildBackup>) {
   const json = buildBackup(...args)
   downloadFile(`pages-desk-backup-${todayKey()}.json`, JSON.stringify(json))
-  return { leads: json.leads.length, invoices: json.invoices.length }
+  return { leads: json.leads.length, invoices: json.invoices.length, proposals: json.proposals.length }
 }

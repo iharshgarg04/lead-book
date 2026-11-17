@@ -94,17 +94,17 @@ export function LogoTaxCard({ logo, onLogo }: { logo: string; onLogo: (v: string
 
 export function AccountCard() {
   const { user, signOut } = useAuth()
-  const { months, leads, invoices, settings, counters } = useStore()
+  const { months, leads, invoices, settings, counters, proposals } = useStore()
   const backup = () => {
-    const n = downloadBackup(months, leads, invoices, settings, counters)
-    toast.success(`Backup saved: ${n.leads} leads, ${n.invoices} invoices`)
+    const n = downloadBackup(months, leads, invoices, settings, counters, proposals)
+    toast.success(`Backup saved: ${n.leads} leads, ${n.invoices} invoices, ${n.proposals} proposals`)
   }
   return (
     <Panel className="overflow-hidden">
       <Section title="Account & backup">
         <p className="m-0 text-[12.5px] text-muted-foreground">Signed in as <b className="text-foreground">{user?.email || '—'}</b>.</p>
         <Button type="button" variant="outline" className="self-start" onClick={backup}><Download aria-hidden />Download full backup (.json)</Button>
-        <p className="m-0 text-[12.5px] text-muted-foreground">Includes every lead with its history and every invoice. Keep one every month; restore leads from Leads → Import.</p>
+        <p className="m-0 text-[12.5px] text-muted-foreground">Includes every lead with its history, every invoice and every proposal. Keep one every month; restore leads from Leads → Import.</p>
         <Button type="button" size="sm" variant="ghost" className="self-start text-muted-foreground" onClick={signOut}>Sign out</Button>
       </Section>
     </Panel>

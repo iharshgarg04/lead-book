@@ -7,6 +7,7 @@ import { useStore } from '@/data/store'
 import type { Lead, LeadStatus } from '@/types'
 import type { useLeadActions } from './actions'
 import { IconBtn } from './bits'
+import { LeadProposals } from '@/features/proposals/LeadProposals'
 import { DetailsSection, HistorySection } from './DrawerHistory'
 import { ContactSection, DrawerHead, FollowUpSection, LogCallSection, RatingSection } from './DrawerSections'
 import { isTypingTarget } from './helpers'
@@ -63,6 +64,7 @@ function DrawerBody({ l, actions, readOnly, onDelete, phone, onClose, onNext }: 
         <LogCallSection l={l} note={note} setNote={setNote} readOnly={readOnly} onOutcome={runStatus} onSaveNote={saveNote} phone={phone} />
         <FollowUpSection l={l} readOnly={readOnly} dateRef={dateRef} onSet={v => actions.setFollow(l.path, v)} phone={phone} />
         <RatingSection l={l} readOnly={readOnly} onRate={r => actions.setRating(l.path, r)} />
+        <LeadProposals l={l} readOnly={readOnly} />
         <HistorySection l={l} meId={meId} people={people} />
         <DetailsSection l={l} meId={meId} people={people} readOnly={readOnly}
           onSave={f => actions.saveDetails(l.path, f)} onResetNew={() => runStatus('new')} onDelete={() => onDelete(l)} />
@@ -108,6 +110,8 @@ export function LeadDrawer({ state, actions, readOnly, shortcutsBlocked, onClose
     if (!open || shortcutsBlocked || !state) return
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target) || e.metaKey || e.ctrlKey || e.altKey) return
+      // The proposal dialog sits on top of the drawer; its keys are not drawer shortcuts.
+      if ((e.target as HTMLElement | null)?.closest?.('[data-proposal-dialog]')) return
       const q = state.queue, at = q.indexOf(state.path)
       const go = (d: number) => { const p = q[at + d]; if (p && getLead(p)) onNavigate(p) }
       if (e.key === 'ArrowRight' || e.key === 'j') go(1)

@@ -19,7 +19,7 @@ const GridRow = memo(function GridRow({ r, i, bad, onChange, onRemove }: {
           <td key={k} className="border-t px-1 py-[5px] align-top">
             <label htmlFor={id} className="sr-only">{label} row {i + 1}</label>
             {k === 'type' ? (
-              <select {...common} className={cn(cellCls, 'pr-6')}><option value="gst">GST</option><option value="nongst">Non-GST</option></select>
+              <select {...common} className={cn(cellCls, 'pr-7 bg-[position:right_6px_center]')}><option value="gst">GST</option><option value="nongst">Non-GST</option></select>
             ) : k === 'date' ? (
               <input {...common} type="date" className={cellCls} />
             ) : k === 'address' || k === 'desc' ? (

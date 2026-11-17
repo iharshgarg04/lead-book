@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/data/auth'
 import { useStore } from '@/data/store'
 import { calcTotals } from '@/features/invoices/model'
+import { monthProgress } from '@/features/leads/activity'
 import { CLOSED, displayName, dueState, nextCmp } from '@/features/leads/model'
-import { MO, money, todayKey, WD } from '@/lib/format'
+import { useMonthActivity, useWho } from '@/features/leads/progress'
+import { PROPOSAL_OPEN, proposalDue, rupees } from '@/features/proposals/model'
+import { MO, money, monthKeyOf, todayKey, WD } from '@/lib/format'
 import type { Invoice, Lead } from '@/types'
 
 function greet(name: string) {
@@ -49,7 +52,15 @@ const InvoiceLine = ({ i, due }: { i: Invoice; due?: boolean }) => {
 
 export default function OverviewPage() {
   const { user } = useAuth()
-  const { leads, invoices, ready, invoicesReady } = useStore()
+  const { leads, invoices, proposals, goals, ready, invoicesReady, proposalsReady } = useStore()
+  const [who] = useWho()
+  const month = monthKeyOf(new Date())
+  const act = useMonthActivity(leads, month, who)
+  const prog = monthProgress(act, month, goals.monthlyLeads)
+  const props = useMemo(() => {
+    const open = proposals.filter(PROPOSAL_OPEN)
+    return { open, value: open.reduce((a, p) => a + (Number(p.amount) || 0), 0), due: open.filter(p => ['overdue', 'today'].includes(proposalDue(p) || '')).length }
+  }, [proposals])
   const d = useMemo(() => {
     const open = leads.filter(l => !CLOSED.has(l.status))
     const due = open.filter(l => ['overdue', 'today'].includes(dueState(l) || '')).sort(nextCmp)
@@ -79,7 +90,9 @@ export default function OverviewPage() {
       />
       <div className="mt-[18px] grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-2.5">
         <StatTile to="/leads" label="Calls due today" value={dash(d.due.length, ready)} detail="overdue + today" tone={d.due.length ? 'warn' : undefined} />
+        <StatTile to="/leads/calendar" label="Worked today" value={dash(prog.today, ready)} detail={`${prog.done} of ${prog.target} this month`} tone={prog.perDay && prog.today >= prog.perDay ? 'good' : undefined} />
         <StatTile to="/leads" label="Hot leads" value={dash(d.hot.length, ready)} detail={`${d.fresh.length} never called`} tone="hot" />
+        <StatTile to="/proposals" label="Open proposals" value={dash(rupees(props.value), proposalsReady)} detail={`${props.open.length} open${props.due ? ` · ${props.due} to follow up` : ''}`} tone={props.due ? 'warn' : undefined} />
         <StatTile to="/invoices" label="Billed this month" value={dash(money(d.billedMonth), invoicesReady)} detail={`${d.month.length} invoice${d.month.length === 1 ? '' : 's'}`} />
         <StatTile to="/invoices" label="Outstanding" value={dash(money(d.outstanding), invoicesReady)} detail={`${d.unpaid.length} unpaid invoice${d.unpaid.length === 1 ? '' : 's'}`} tone={d.outstanding > 0 ? 'warn' : undefined} />
       </div>

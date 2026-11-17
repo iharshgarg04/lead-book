@@ -10,6 +10,7 @@ const InvoicesListPage = lazy(() => import('@/features/invoices/InvoicesListPage
 const InvoiceEditorPage = lazy(() => import('@/features/invoices/InvoiceEditorPage'))
 const InvoiceDetailPage = lazy(() => import('@/features/invoices/InvoiceDetailPage'))
 const InvoiceBulkPage = lazy(() => import('@/features/invoices/InvoiceBulkPage'))
+const ProposalsPage = lazy(() => import('@/features/proposals/ProposalsPage'))
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'))
 
 const Loading = () => <div className="mt-6 h-32 animate-pulse rounded-xl bg-card" />
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="overview" element={<OverviewPage />} />
             <Route path="leads" element={<LeadsPage />} />
             <Route path="leads/:view" element={<LeadsPage />} />
+            <Route path="proposals" element={<ProposalsPage />} />
             <Route path="invoices" element={<InvoicesListPage />} />
             <Route path="invoices/new" element={<InvoiceEditorPage />} />
             <Route path="invoices/bulk" element={<InvoiceBulkPage />} />

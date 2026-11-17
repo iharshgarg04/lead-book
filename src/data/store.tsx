@@ -1,5 +1,5 @@
 /* Live data for the whole portal. Subscribes once after sign-in and exposes
-   leads, months, invoices, settings, counters and people through context. */
+   leads, months, invoices, proposals, settings, goals, counters and people through context. */
 import {
   collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, type DocumentData, type Unsubscribe,
 } from 'firebase/firestore'
@@ -9,7 +9,7 @@ import { hydrateLead } from '@/features/leads/model'
 import { db } from '@/lib/firebase'
 import { monthLabelOf, nowIso } from '@/lib/format'
 import { DEFAULT_COUNTERS, DEFAULT_SETTINGS, mergeCounters, mergeSettings } from '@/lib/settings'
-import type { BusinessSettings, Counters, Invoice, InvoiceDoc, Lead, Month, Person } from '@/types'
+import type { BusinessSettings, Counters, Goals, Invoice, InvoiceDoc, Lead, Month, Person, Proposal, ProposalDoc } from '@/types'
 import { useAuth } from './auth'
 
 interface StoreCtx {
@@ -17,12 +17,15 @@ interface StoreCtx {
   leads: Lead[]
   months: Month[]
   invoices: Invoice[]
+  proposals: Proposal[]
   settings: BusinessSettings
+  goals: Goals
   counters: Counters
   people: Record<string, Person>
   /** true once months + every month's leads + invoices have answered from the server */
   ready: boolean
   invoicesReady: boolean
+  proposalsReady: boolean
   /** the signed-in account isn't on the allowed list */
   denied: boolean
   /** a listener stopped with an error */
@@ -35,6 +38,8 @@ interface StoreCtx {
   getLead: (path: string | null | undefined) => Lead | undefined
   getInvoice: (id: string | null | undefined) => Invoice | undefined
 }
+
+export const DEFAULT_GOALS: Goals = { monthlyLeads: 300 }
 const Ctx = createContext<StoreCtx | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -42,7 +47,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [byMonth, setByMonth] = useState<Record<string, Lead[]>>({})
   const [months, setMonths] = useState<Month[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [proposals, setProposals] = useState<Proposal[]>([])
+  const [proposalsReady, setProposalsReady] = useState(false)
   const [settings, setSettings] = useState<BusinessSettings>(DEFAULT_SETTINGS)
+  const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS)
   const [counters, setCounters] = useState<Counters>(DEFAULT_COUNTERS)
   const [people, setPeople] = useState<Record<string, Person>>({})
   const [monthsReady, setMonthsReady] = useState(false)
@@ -83,6 +91,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setInvoices(snap.docs.map(d => ({ id: d.id, ...(d.data() as InvoiceDoc) })))
       if (!snap.metadata.fromCache) setInvoicesReady(true)
     }, fail))
+    subs.push(onSnapshot(collection(db, 'proposals'), { includeMetadataChanges: true }, snap => {
+      setProposals(snap.docs.map(d => ({ id: d.id, ...(d.data() as ProposalDoc) })))
+      if (!snap.metadata.fromCache) setProposalsReady(true)
+    }, fail))
+    subs.push(onSnapshot(doc(db, 'settings/goals'), d => {
+      const n = Number(d.data()?.monthlyLeads)
+      setGoals({ monthlyLeads: n > 0 ? n : DEFAULT_GOALS.monthlyLeads })
+    }, () => {}))
     subs.push(onSnapshot(doc(db, 'settings/business'), d => setSettings(mergeSettings(d.exists() ? (d.data() as Partial<BusinessSettings>) : null)), () => {}))
     subs.push(onSnapshot(doc(db, 'settings/counters'), d => setCounters(mergeCounters(d.exists() ? d.data() : null)), () => {}))
     subs.push(onSnapshot(collection(db, 'people'), snap => {
@@ -108,7 +124,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const getInvoice = useCallback((id: string | null | undefined) => (id ? invoiceIndex.get(id) : undefined), [invoiceIndex])
 
   const value: StoreCtx = {
-    leads, months, invoices, settings, counters, people, ready, invoicesReady, denied, error, slow,
+    leads, months, invoices, proposals, settings, goals, counters, people, ready, invoicesReady, proposalsReady, denied, error, slow,
     readOnly, setReadOnly, meId: user?.uid ?? null, getLead, getInvoice,
   }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

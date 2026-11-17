@@ -2,16 +2,16 @@
 import { Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react'
 import { Select } from '@/components/common'
-import { MONTH_FULL, pad } from '@/lib/format'
+import { addDays, dkey, MONTH_FULL, pad } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Lead, Month } from '@/types'
 import { Btn } from './bits'
-import { dateFilterOptions, isFiltered, SORTS, statusCounts, type FollowFilter, type SortKey } from './filters'
+import { DATE_KINDS, dateFilterOptions, isFiltered, SORTS, statusCounts, type DateKind, type FollowFilter, type Filters, type SortKey } from './filters'
 import { LeadRow, LeadRowHead } from './LeadRow'
 import { PKG, RATING, STATUS, TL } from './model'
 import type { LeadFiltersApi } from './useLeadFilters'
 
-const FOLLOW_OPTS: [FollowFilter, string][] = [['', 'Any follow-up'], ['overdue', 'Overdue'], ['today', 'Due today'], ['week', 'Next 7 days'], ['none', 'No follow-up set']]
+const FOLLOW_OPTS: [FollowFilter, string][] = [['', 'Any follow-up'], ['overdue', 'Overdue'], ['today', 'Due today'], ['tomorrow', 'Due tomorrow'], ['week', 'Next 7 days'], ['none', 'No follow-up set']]
 
 /** Search input with a short debounce; follows outside changes (e.g. Clear filters). */
 function SearchBox({ value, onChange, inputRef }: { value: string; onChange: (v: string) => void; inputRef: RefObject<HTMLInputElement | null> }) {
@@ -28,6 +28,49 @@ function SearchBox({ value, onChange, inputRef }: { value: string; onChange: (v:
       <label htmlFor="f-q" className="sr-only">Search leads</label>
       <input id="f-q" ref={inputRef} type="search" autoComplete="off" value={text} onChange={e => setText(e.target.value)}
         placeholder="Search name, brand, phone, notes…  ( / )" aria-keyshortcuts="/" className="field pl-[34px]" />
+    </div>
+  )
+}
+
+/** Quick ranges for the date filter. */
+function quickRanges(): { k: string; label: string; d1: string; d2: string }[] {
+  const t = new Date(), day = (n: number) => dkey(addDays(t, n))
+  const mon = addDays(t, -((t.getDay() + 6) % 7))
+  return [
+    { k: 'y', label: 'Yesterday', d1: day(-1), d2: day(-1) },
+    { k: 't', label: 'Today', d1: day(0), d2: day(0) },
+    { k: 'tm', label: 'Tomorrow', d1: day(1), d2: day(1) },
+    { k: 'w', label: 'This week', d1: dkey(mon), d2: dkey(addDays(mon, 6)) },
+    { k: 'l7', label: 'Last 7 days', d1: day(-6), d2: day(0) },
+    { k: 'm', label: 'This month', d1: dkey(new Date(t.getFullYear(), t.getMonth(), 1)), d2: dkey(new Date(t.getFullYear(), t.getMonth() + 1, 0)) },
+  ]
+}
+
+/** Date range filter: pick what the dates mean, a from/to range, or a quick range. */
+function DateFilter({ f, update }: { f: Filters; update: (p: Partial<Filters>) => void }) {
+  const ranges = quickRanges()
+  const active = !!(f.d1 || f.d2)
+  const setRange = (d1: string, d2: string) => update({ d1, d2, ...(f.dk === 'next' && f.sort === 'newest' ? { sort: 'followup' as SortKey } : {}) })
+  return (
+    <div role="group" aria-label="Date filter" className={cn('mb-3 flex flex-wrap items-center gap-2 rounded-xl border bg-card px-3 py-2.5', active && 'border-foreground/40')}>
+      <Select aria-label="Filter dates by" value={f.dk} onChange={e => update({ dk: e.target.value as DateKind })} className="h-8 py-0 text-[13px]">
+        {Object.entries(DATE_KINDS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+      </Select>
+      <label className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">From
+        <input type="date" value={f.d1} max={f.d2 || undefined} onChange={e => setRange(e.target.value, f.d2 && e.target.value > f.d2 ? e.target.value : f.d2)} className="field h-8 w-[146px]" />
+      </label>
+      <label className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">To
+        <input type="date" value={f.d2} min={f.d1 || undefined} onChange={e => setRange(f.d1, e.target.value)} className="field h-8 w-[146px]" />
+      </label>
+      <div className="flex flex-wrap gap-1.5">
+        {ranges.map(r => (
+          <button key={r.k} type="button" aria-pressed={f.d1 === r.d1 && f.d2 === r.d2} onClick={() => setRange(r.d1, r.d2)}
+            className="rounded-full border border-dashed border-input px-2.5 py-1 text-[12.5px] font-medium text-ink-2 hover:border-solid hover:border-ink-2 aria-pressed:border-solid aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-card">
+            {r.label}
+          </button>
+        ))}
+      </div>
+      {active && <Btn size="sm" variant="link" onClick={() => update({ d1: '', d2: '' })}>Clear dates</Btn>}
     </div>
   )
 }
@@ -92,6 +135,8 @@ export function AllLeadsView({ leads, months, ready, filters, onOpen, searchRef 
           {Object.entries(SORTS).map(([k, s]) => <option key={k} value={k}>Sort: {s.label}</option>)}
         </Select>
       </div>
+
+      <DateFilter f={f} update={update} />
 
       <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-1.5 pb-3">
         <button type="button" aria-pressed={!f.st.length} onClick={() => update({ st: [] })}

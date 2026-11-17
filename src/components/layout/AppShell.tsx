@@ -1,21 +1,24 @@
-import { FileText, LayoutGrid, Phone, Settings as SettingsIcon, type LucideIcon } from 'lucide-react'
+import { FileText, Handshake, LayoutGrid, Phone, Settings as SettingsIcon, type LucideIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { NavLink, Outlet } from 'react-router'
 import { useAuth } from '@/data/auth'
 import { useStore } from '@/data/store'
 import { dueState } from '@/features/leads/model'
 import { invoiceStatus } from '@/features/invoices/model'
+import { proposalDue } from '@/features/proposals/model'
 import { cn } from '@/lib/utils'
 
 interface NavItem { to: string; label: string; icon: LucideIcon; count?: number }
 
 function useNav(): NavItem[] {
-  const { leads, invoices } = useStore()
+  const { leads, invoices, proposals } = useStore()
   const due = useMemo(() => leads.filter(l => { const d = dueState(l); return d === 'overdue' || d === 'today' }).length, [leads])
+  const propsDue = useMemo(() => proposals.filter(p => { const d = proposalDue(p); return d === 'overdue' || d === 'today' }).length, [proposals])
   const unpaid = useMemo(() => invoices.filter(i => ['unpaid', 'partial'].includes(invoiceStatus(i))).length, [invoices])
   return [
     { to: '/overview', label: 'Overview', icon: LayoutGrid },
     { to: '/leads', label: 'Leads', icon: Phone, count: due },
+    { to: '/proposals', label: 'Proposals', icon: Handshake, count: propsDue },
     { to: '/invoices', label: 'Invoices', icon: FileText, count: unpaid },
     { to: '/settings', label: 'Settings', icon: SettingsIcon },
   ]

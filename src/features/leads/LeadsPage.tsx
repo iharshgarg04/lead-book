@@ -11,6 +11,7 @@ import type { Lead } from '@/types'
 import { useLeadActions } from './actions'
 import { AddLeadDialog } from './AddLeadDialog'
 import { AllLeadsView } from './AllLeadsView'
+import { CalendarView } from './CalendarView'
 import { Btn } from './bits'
 import { PRESET_KEYS, presetFromQuery, presetToQuery, savePrefs, todaySections, type LeadsView, type TodaySection } from './filters'
 import { isTypingTarget } from './helpers'
@@ -24,11 +25,11 @@ import { useLeadFilters } from './useLeadFilters'
 type Modal = null | 'add' | 'import'
 
 function Tabs({ view, due, total, onPick }: { view: LeadsView; due: number; total: number; onPick: (v: LeadsView) => void }) {
-  const tab = (v: LeadsView, label: string, n: number, hot: boolean) => (
+  const tab = (v: LeadsView, label: string, n: number | null, hot: boolean) => (
     <button type="button" role="tab" id={`tab-${v}`} aria-selected={view === v} aria-controls={`view-${v}`} onClick={() => onPick(v)}
       className="-mb-px border-b-2 border-transparent bg-transparent px-3.5 pt-3 pb-[11px] text-[14.5px] font-semibold text-muted-foreground hover:text-foreground aria-selected:border-primary aria-selected:text-foreground">
       {label}
-      {total > 0 && (
+      {total > 0 && n !== null && (
         <span className={cn('ml-[5px] rounded-full bg-muted px-1.5 py-0.5 font-mono text-[11.5px] font-semibold text-muted-foreground',
           hot && view === v && 'bg-primary text-primary-foreground')}>{n}</span>
       )}
@@ -37,6 +38,7 @@ function Tabs({ view, due, total, onPick }: { view: LeadsView; due: number; tota
   return (
     <nav role="tablist" aria-label="Views" className="sticky top-0 z-[5] mt-5 flex gap-0.5 border-b bg-background">
       {tab('today', 'Today', due, due > 0)}
+      {tab('calendar', 'Calendar', null, false)}
       {tab('all', 'All leads', total, false)}
     </nav>
   )
@@ -44,7 +46,7 @@ function Tabs({ view, due, total, onPick }: { view: LeadsView; due: number; tota
 
 export default function LeadsPage() {
   const params = useParams()
-  const view: LeadsView = params.view === 'all' ? 'all' : 'today'
+  const view: LeadsView = params.view === 'all' || params.view === 'calendar' ? params.view : 'today'
   const navigate = useNavigate()
   const [sp, setSp] = useSearchParams()
   const { leads, months, ready, readOnly, getLead } = useStore()
@@ -59,8 +61,9 @@ export default function LeadsPage() {
   const [wantSearch, setWantSearch] = useState(false)
 
   const allQueue = useMemo(() => filters.list.map(l => l.path), [filters.list])
-  const openLead = useCallback((path: string, ctx: 'today' | 'all') => {
-    let queue = ctx === 'all' ? allQueue : todayQueue
+  /** Open a lead; prev/next walk the list it was opened from. */
+  const openLead = useCallback((path: string, ctx: 'today' | 'all' | string[]) => {
+    let queue = Array.isArray(ctx) ? ctx : ctx === 'all' ? allQueue : todayQueue
     if (!queue.includes(path)) queue = [path]
     setModal(null)
     setDrawer({ path, queue, open: true })
@@ -112,7 +115,7 @@ export default function LeadsPage() {
     if (wantSearch && view === 'all') { searchRef.current?.focus(); setWantSearch(false) }
   }, [wantSearch, view])
 
-  const pickView = (v: LeadsView) => navigate(v === 'all' ? '/leads/all' : '/leads')
+  const pickView = (v: LeadsView) => navigate(v === 'today' ? '/leads' : `/leads/${v}`)
   const seeAll = (s: TodaySection) => {
     const q = presetToQuery({ ...s.all })
     navigate(`/leads/all?${q || 'sort=newest'}`)
@@ -141,6 +144,8 @@ export default function LeadsPage() {
           <TodayView leads={leads} sections={sections} ready={ready} readOnly={readOnly}
             onOpen={p => openLead(p, 'today')} onNotPicked={notPicked} onSeeAll={seeAll}
             onImport={() => setModal('import')} onAdd={() => setModal('add')} />
+        ) : view === 'calendar' ? (
+          <CalendarView leads={leads} ready={ready} onOpen={openLead} />
         ) : (
           <AllLeadsView leads={leads} months={months} ready={ready} filters={filters} searchRef={searchRef} onOpen={p => openLead(p, 'all')} />
         )}
